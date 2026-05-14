@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>多订单截图对比</title>
+<style>
+:root{--card:#121a26;--line:#243244;--text:#eef6ff;--muted:#9badc2;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444;--blue:#0ea5e9}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#07111f,#0f172a);color:var(--text);font-family:"Microsoft YaHei",Arial}
+.wrap{max-width:1120px;margin:0 auto;padding:18px}.card{background:#121a26;border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0}
+.good{color:var(--green)}.ok{color:var(--yellow)}.bad{color:var(--red)}a{color:#7dd3fc}.sub{color:var(--muted);line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.stat{background:#0b1220;border:1px solid #273244;border-radius:14px;padding:12px}.k{color:var(--muted);font-size:13px}.v{font-size:20px;font-weight:800;margin-top:4px}
+.rank{font-size:28px;font-weight:900}.ocr{white-space:pre-wrap;max-height:130px;overflow:auto;font-size:12px;color:#cbd5e1}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.wrap{padding:10px}.rank{font-size:24px}}
+
+@media(max-width:850px){
+ body{font-size:16px}
+ .wrap{padding:10px}
+ .card{border-radius:18px;padding:14px}
+ table{display:block;overflow-x:auto;white-space:nowrap;font-size:13px}
+ .grid{grid-template-columns:1fr!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>多订单截图对比结果</h1>
+  <p><a href="/">返回首页</a></p>
+
+  {% if items %}
+    {% for item in items %}
+      <div class="card">
+        {% if item.analysis %}
+          {% set r = item.analysis %}
+          <div class="rank {{ r.css_class }}">第 {{ loop.index }} 名：{{ r.grade }}</div>
+          <p class="sub">{{ item.filename }} · {{ r.pro_reason }} {{ r.pro_warning }}</p>
+          <div class="grid">
+            <div class="stat"><div class="k">AI评分</div><div class="v">{{ r.score }}/100</div></div>
+            <div class="stat"><div class="k">动作建议</div><div class="v">{{ r.action }}</div></div>
+            <div class="stat"><div class="k">收入</div><div class="v">{{ money(r.income) }}</div></div>
+            <div class="stat"><div class="k">英里</div><div class="v">{{ "%.2f"|format(r.miles) }}</div></div>
+            <div class="stat"><div class="k">行程时间</div><div class="v">{{ "%.0f"|format(r.minutes) }} 分钟</div></div>
+            <div class="stat"><div class="k">每英里收入</div><div class="v">{{ money(r.gross_per_mile) }}</div></div>
+            <div class="stat"><div class="k">每小时净利</div><div class="v">{{ money(r.net_per_hour) }}</div></div>
+            <div class="stat"><div class="k">净利润</div><div class="v">{{ money(r.net_profit) }}</div></div>
+          </div>
+          <details style="margin-top:10px"><summary>查看OCR文字</summary><div class="ocr">{{ item.ocr_text }}</div></details>
+        {% else %}
+          <div class="rank bad">无法识别：{{ item.filename }}</div>
+          <p class="sub">{{ item.error }}</p>
+          <details open><summary>OCR文字</summary><div class="ocr">{{ item.ocr_text }}</div></details>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="card">没有收到截图或订单文字。请返回重新上传。</div>
+  {% endif %}
+</div>
+
+<script>
+const DYNAMIC_TRANSLATIONS = {
+  en: [
+    ["不建议：长途低收益路线","Not recommended: long low-profit route"],
+    ["不建议：长途回程风险高","Not recommended: high return-trip risk"],
+    ["不建议：地址路线风险高","Not recommended: high address-route risk"],
+    ["不建议：低于当地最低可接线","Not recommended: below local minimum"],
+    ["不建议：低于当地普通线","Not recommended: below local normal line"],
+    ["强烈建议：当地神单","Strongly recommended: excellent local order"],
+    ["建议：当地好单","Recommended: good local order"],
+    ["普通可接单","Normal acceptable order"],
+    ["普通但时薪偏低","Normal order but low hourly profit"],
+    ["单价偏低但时薪可接","Low per-mile but acceptable hourly"],
+    ["好单但耗时偏长","Good order but too time-consuming"],
+    ["高风险","High risk"], ["低风险","Low risk"], ["中等风险","Medium risk"], ["中低风险","Medium-low risk"],
+    ["建议拒绝","Recommend rejecting"], ["建议接单","Recommend accepting"], ["马上接","Accept now"], ["可接","Acceptable"], ["看情况","Depends"],
+    ["当前市场：","Current market: "], ["订单类型：","Order type: "], ["每英里收入","Per-mile income"],
+    ["属于","is"], ["净利润","Net profit"], ["预计每小时净利润","Estimated hourly net profit"],
+    ["时薪偏低","Low hourly profit"], ["普通时薪","Normal hourly profit"], ["好时薪","Good hourly profit"], ["优秀时薪","Excellent hourly profit"],
+    ["低于当地最低","below local minimum"], ["当地最低","local minimum"], ["当地好时薪","local good hourly"],
+    ["低于当地普通线","below local normal line"], ["当地普通","local normal"], ["当地好单","local good order"], ["当地神单","local excellent order"],
+    ["Pro AI 接单决策","Pro AI decision"], ["AI评分","AI score"], ["风险","Risk"], ["动作","Action"],
+    ["当地市场","Local market"], ["类型","Type"], ["最低可接","Minimum acceptable"], ["好单","Good order"], ["神单","Excellent order"],
+    ["最低时薪","Minimum hourly"], ["好时薪","Good hourly"],
+    ["区域AI","Area AI"], ["地址路线AI","Address route AI"], ["路线AI","Route AI"], ["高峰AI","Rush-hour AI"],
+    ["GPS定位","GPS location"], ["订单底部地址OCR","Bottom-address OCR"], ["订单截图路线文字","Screenshot route text"],
+    ["华人区优质短单","Asian-area good short orders"], ["普通","Normal"], ["未定位","Not located"], ["夜间低堵车","Night low traffic"],
+    ["起点：","Pickup: "], ["终点：","Dropoff: "],
+    ["地址路线识别为 LA → Orange County 方向，长途回程空驶风险高。","Address route detected as LA → Orange County; high empty-return risk."],
+    ["终点接近 Huntington Beach / PCH 海边区域，晚高峰和回LA回程风险较高。","Dropoff is near Huntington Beach / PCH; higher rush-hour and return-to-LA risk."],
+    ["地址路线为长途单：40英里以上，空车回程风险明显。","Long route: over 40 miles, clear empty-return risk."],
+    ["地址路线为中长途单，需要考虑回程单概率。","Medium/long route: consider chance of return trip."],
+    ["订单耗时超过2小时，实际时薪风险高。","Trip takes over 2 hours; real hourly profit risk is high."],
+    ["订单耗时较长，容易拖低真实时薪。","Long trip time can reduce real hourly profit."],
+    ["长途低每英里收入组合，不适合接。","Long distance with low per-mile pay is not worth accepting."],
+    ["预计每小时净利低于$20，低于多数城市最低可接受时薪。","Estimated hourly net is below $20, under the minimum acceptable level in most cities."],
+    ["长途订单：40英里以上，必须考虑空车回程和真实时薪。","Long trip over 40 miles; consider empty return and real hourly profit."],
+    ["中长途订单：注意回程单概率。","Medium/long trip: consider return-trip probability."],
+    ["耗时超过2小时，表面收入容易误导，实际时薪风险高。","Over 2 hours: gross pay can be misleading; real hourly profit risk is high."],
+    ["长途低每英里收入组合，通常不适合接。","Long distance plus low per-mile pay is usually not worth accepting."],
+    ["GPS显示在 Arcadia / Temple City / San Gabriel 附近，短单密度较好，夜间相对稳定，适合连续短单。","GPS shows Arcadia / Temple City / San Gabriel; good short-order density and relatively stable at night."],
+    ["截图文字检测到 Irvine。","Screenshot text detected Irvine."],
+    ["当前夜间堵车较少，但要注意安全和回程单。","Traffic is lighter at night, but watch safety and return trips."],
+    ["未匹配到具体城市，使用美国通用 UberX 评估标准。","No specific city matched; using US default UberX standards."],
+    ["订单类型：UberX 基础标准。","Order type: UberX base standard."],
+    ["起点","Pickup"], ["终点","Dropoff"],
+    ["收入","Income"], ["英里","Miles"], ["行程时间","Trip time"], ["每小时净利","Hourly net"], ["每英里净利","Net per mile"],
+    ["车辆损耗","Vehicle cost"], ["油费","Fuel cost"], ["每英里收入","Income per mile"]
+  ],
+  es: [
+    ["不建议：长途低收益路线","No recomendado: ruta larga de baja ganancia"],
+    ["高风险","Riesgo alto"], ["低风险","Riesgo bajo"], ["建议拒绝","Rechazar"], ["建议接单","Aceptar"],
+    ["当前市场：","Mercado actual: "], ["订单类型：","Tipo de pedido: "], ["净利润","Ganancia neta"],
+    ["AI评分","Puntuación AI"], ["风险","Riesgo"], ["动作","Acción"], ["区域AI","AI de zona"], ["地址路线AI","AI de ruta por dirección"],
+    ["起点：","Recogida: "], ["终点：","Destino: "], ["收入","Ingreso"], ["英里","Millas"], ["行程时间","Tiempo de viaje"]
+  ],
+  ko: [
+    ["不建议：长途低收益路线","비추천: 장거리 저수익 경로"],
+    ["高风险","높은 위험"], ["低风险","낮은 위험"], ["建议拒绝","거절 권장"], ["建议接单","수락 권장"],
+    ["当前市场：","현재 시장: "], ["订单类型：","주문 유형: "], ["净利润","순이익"],
+    ["AI评分","AI 점수"], ["风险","위험"], ["动作","조치"], ["区域AI","지역 AI"], ["地址路线AI","주소 경로 AI"],
+    ["起点：","픽업: "], ["终点：","도착: "], ["收入","수입"], ["英里","마일"], ["行程时间","이동 시간"]
+  ]
+};
+
+function translateDynamicText(lang){
+  if(lang === "zh") return;
+  const pairs = DYNAMIC_TRANSLATIONS[lang] || DYNAMIC_TRANSLATIONS.en;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      const parent = node.parentElement;
+      if(!parent) return NodeFilter.FILTER_REJECT;
+      if(["SCRIPT","STYLE","TEXTAREA","INPUT","OPTION"].includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(node=>{
+    let t = node.nodeValue;
+    pairs.forEach(([cn, tr])=>{ t = t.split(cn).join(tr); });
+    node.nodeValue = t;
+  });
+}
+
+const oldSetLanguage = window.setLanguage;
+window.setLanguage = function(lang){
+  if(oldSetLanguage) oldSetLanguage(lang);
+  setTimeout(()=>translateDynamicText(lang), 50);
+};
+window.addEventListener("load", ()=>{
+  const lang = localStorage.getItem("uber_ai_lang") || "zh";
+  setTimeout(()=>translateDynamicText(lang), 100);
+});
+</script>
+
+
+<script>
+const AI_RESULT_TRANSLATIONS_V65 = {
+  en: [
+    ["建议：当地好单","Recommended: good local order"],
+    ["强烈建议：当地神单","Strongly recommended: excellent local order"],
+    ["不建议：长途低收益路线","Not recommended: long low-profit route"],
+    ["不建议：低于当地普通线","Not recommended: below local normal line"],
+    ["不建议：低于当地最低可接线","Not recommended: below local minimum acceptable line"],
+    ["普通可接单","Normal acceptable order"],
+    ["普通但时薪偏低","Normal order but low hourly pay"],
+    ["当地好单","local good order"],
+    ["当地神单","local excellent order"],
+    ["低风险","Low risk"], ["高风险","High risk"], ["中等风险","Medium risk"], ["中低风险","Medium-low risk"],
+    ["建议接单","Recommend accepting"], ["建议拒绝","Recommend rejecting"], ["马上接","Accept now"], ["可接","Acceptable"], ["看情况","Depends"],
+    ["Pro AI 接单决策","Pro AI decision"],
+    ["AI评分","AI score"], ["风险","Risk"], ["动作","Action"],
+    ["当前市场","Current market"], ["当地市场","Local market"], ["订单类型","Order type"], ["类型","Type"],
+    ["每英里收入","Income per mile"], ["每小时净利","Hourly net"], ["预计每小时净利润","Estimated hourly net profit"],
+    ["净利润","Net profit"], ["普通时薪","Normal hourly pay"], ["好时薪","Good hourly pay"], ["最低时薪","Minimum hourly pay"],
+    ["最低可接","Minimum acceptable"], ["好单","Good order"], ["神单","Excellent order"],
+    ["区域AI","Area AI"], ["地址路线AI","Address-route AI"], ["路线AI","Route AI"], ["高峰AI","Rush-hour AI"],
+    ["GPS定位","GPS location"], ["订单底部地址OCR","Bottom-address OCR"], ["订单截图路线文字","Screenshot route text"],
+    ["华人区优质短单","Asian-area quality short-order zone"], ["洛杉矶城区","Los Angeles urban area"], ["普通","Normal"], ["未定位","Not located"],
+    ["夜间低堵车","Night / low traffic"], ["暂无明显风险","No obvious risk"], ["未匹配到具体城市","No specific city matched"],
+    ["使用美国通用 UberX 评估标准","Using US default UberX evaluation standard"],
+    ["UberX 基础标准","UberX base standard"],
+    ["起点","Pickup"], ["终点","Dropoff"], ["到达","Dropoff"],
+    ["订单底部地址","order bottom address"], ["截图文字检测到","Screenshot text detected"],
+    ["当前夜间堵车较少","Traffic is lighter at night"], ["但是要注意安全和回程单","but watch safety and return trips"],
+    ["短单密度较好","good short-order density"], ["夜间相对稳定","relatively stable at night"], ["适合连续短单","good for consecutive short trips"],
+    ["地址路线识别为","Address route detected as"], ["长途回程空驶风险高","high empty-return risk on long route"],
+    ["订单耗时较长","Trip takes a long time"], ["容易拖低真实时薪","can reduce real hourly pay"],
+    ["行程时间","Trip time"], ["行程距离","Trip distance"], ["收入","Income"], ["英里","Miles"], ["时间","Time"], ["分钟","minutes"]
+  ],
+  es: [
+    ["建议：当地好单","Recomendado: buen pedido local"],
+    ["强烈建议：当地神单","Muy recomendado: pedido excelente local"],
+    ["不建议：长途低收益路线","No recomendado: ruta larga de baja ganancia"],
+    ["低风险","Riesgo bajo"], ["高风险","Riesgo alto"], ["中等风险","Riesgo medio"], ["中低风险","Riesgo medio-bajo"],
+    ["建议接单","Aceptar recomendado"], ["建议拒绝","Rechazar recomendado"], ["可接","Aceptable"],
+    ["Pro AI 接单决策","Decisión Pro AI"], ["AI评分","Puntuación AI"], ["风险","Riesgo"], ["动作","Acción"],
+    ["当前市场","Mercado actual"], ["当地市场","Mercado local"], ["订单类型","Tipo de pedido"], ["每英里收入","Ingreso por milla"],
+    ["每小时净利","Ganancia neta por hora"], ["净利润","Ganancia neta"], ["区域AI","AI de zona"], ["地址路线AI","AI de ruta por dirección"],
+    ["路线AI","AI de ruta"], ["高峰AI","AI de hora pico"], ["GPS定位","GPS"], ["起点","Recogida"], ["终点","Destino"],
+    ["普通时薪","Pago horario normal"], ["好时薪","Buen pago horario"], ["最低时薪","Pago mínimo por hora"]
+  ],
+  ko: [
+    ["建议：当地好单","권장: 현지 좋은 주문"],
+    ["强烈建议：当地神单","강력 추천: 현지 최고 주문"],
+    ["不建议：长途低收益路线","비추천: 장거리 저수익 경로"],
+    ["不建议：低于当地普通线","비추천: 현지 일반 기준 미달"],
+    ["不建议：低于当地最低可接线","비추천: 현지 최소 수락 기준 미달"],
+    ["普通可接单","일반 수락 가능 주문"],
+    ["普通但时薪偏低","일반 주문이지만 시급 낮음"],
+    ["当地好单","현지 좋은 주문"],
+    ["当地神单","현지 최고 주문"],
+    ["低风险","낮은 위험"], ["高风险","높은 위험"], ["中等风险","중간 위험"], ["中低风险","중하 위험"],
+    ["建议接单","수락 권장"], ["建议拒绝","거절 권장"], ["马上接","즉시 수락"], ["可接","수락 가능"], ["看情况","상황에 따라"],
+    ["Pro AI 接单决策","Pro AI 주문 결정"],
+    ["AI评分","AI 점수"], ["风险","위험"], ["动作","조치"],
+    ["当前市场","현재 시장"], ["当地市场","현지 시장"], ["订单类型","주문 유형"], ["类型","유형"],
+    ["每英里收入","마일당 수입"], ["每小时净利","시간당 순이익"], ["预计每小时净利润","예상 시간당 순이익"],
+    ["净利润","순이익"], ["普通时薪","일반 시급"], ["好时薪","좋은 시급"], ["最低时薪","최저 시급"],
+    ["最低可接","최소 수락"], ["好单","좋은 주문"], ["神单","최고 주문"],
+    ["区域AI","지역 AI"], ["地址路线AI","주소 경로 AI"], ["路线AI","경로 AI"], ["高峰AI","피크타임 AI"],
+    ["GPS定位","GPS 위치"], ["订单底部地址OCR","주문 하단 주소 OCR"], ["订单截图路线文字","주문 스크린샷 경로 텍스트"],
+    ["华人区优质短单","아시아권 우수 단거리 주문 지역"], ["洛杉矶城区","로스앤젤레스 도심"], ["普通","일반"], ["未定位","미위치"],
+    ["夜间低堵车","야간 저교통"], ["暂无明显风险","뚜렷한 위험 없음"], ["未匹配到具体城市","구체적인 도시 미매칭"],
+    ["使用美国通用 UberX 评估标准","미국 공통 UberX 평가 기준 사용"],
+    ["UberX 基础标准","UberX 기본 기준"],
+    ["起点","픽업"], ["终点","도착"], ["到达","도착"],
+    ["订单底部地址","주문 하단 주소"], ["截图文字检测到","스크린샷 텍스트 감지"],
+    ["当前夜间堵车较少","현재 야간 교통량이 적음"], ["但是要注意安全和回程单","하지만 안전과 복귀 주문에 주의"],
+    ["短单密度较好","단거리 주문 밀도 좋음"], ["夜间相对稳定","야간 비교적 안정"], ["适合连续短单","연속 단거리 주문에 적합"],
+    ["地址路线识别为","주소 경로 식별"], ["长途回程空驶风险高","장거리 빈차 복귀 위험 높음"],
+    ["订单耗时较长","주문 시간이 김"], ["容易拖低真实时薪","실제 시급을 낮출 수 있음"],
+    ["行程时间","이동 시간"], ["行程距离","이동 거리"], ["收入","수입"], ["英里","마일"], ["时间","시간"], ["分钟","분"],
+    ["属于","분류"], ["低于当地普通线","현지 일반 기준 미달"], ["当地最低","현지 최저"], ["当地好时薪","현지 좋은 시급"]
+  ]
+};
+
+function deepTranslateVisibleTextV65(lang){
+  if(!lang || lang === "zh") return;
+  const pairs = AI_RESULT_TRANSLATIONS_V65[lang] || AI_RESULT_TRANSLATIONS_V65.en;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const parent = node.parentElement;
+      if(!parent || !node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      if(["SCRIPT","STYLE","TEXTAREA","INPUT","OPTION"].includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(node=>{
+    let t = node.nodeValue;
+    pairs.forEach(([a,b]) => { t = t.split(a).join(b); });
+    node.nodeValue = t;
+  });
+}
+
+function runV65Translation(){
+  const lang = localStorage.getItem("uber_ai_lang") || document.getElementById("languageSelect")?.value || "zh";
+  deepTranslateVisibleTextV65(lang);
+}
+
+window.addEventListener("load", ()=>{
+  setTimeout(runV65Translation, 100);
+  setTimeout(runV65Translation, 500);
+  setTimeout(runV65Translation, 1200);
+});
+document.addEventListener("change", (e)=>{
+  if(e.target && e.target.id === "languageSelect"){
+    setTimeout(runV65Translation, 100);
+    setTimeout(runV65Translation, 500);
+  }
+});
+</script>
+
+</body>
+</html>

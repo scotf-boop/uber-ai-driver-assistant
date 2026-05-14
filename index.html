@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0ea5e9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Uber AI">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uber AI Cloud V8.0</title>
+<style>
+:root{--bg:#07111f;--card:#111827;--card2:#0b1220;--line:#263244;--text:#eef6ff;--muted:#9badc2;--blue:#0ea5e9;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#07111f,#0f172a);color:var(--text);font-family:"Microsoft YaHei",Arial,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 14px 46px}.top{position:sticky;top:0;background:rgba(7,17,31,.92);backdrop-filter:blur(10px);z-index:10;padding:12px 0;border-bottom:1px solid #1f2937}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}.lang{max-width:190px}
+h1{font-size:30px;margin:0}.sub{color:var(--muted);line-height:1.6}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.card{background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+label{display:block;color:#cbd5e1;font-size:14px;margin:10px 0 6px}input,textarea,button,select{width:100%;border-radius:12px;border:1px solid #334155;background:#0b1220;color:var(--text);padding:12px;font-size:16px}input[type=checkbox]{width:auto}
+textarea{min-height:120px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn.secondary{background:#0b1220;border:1px solid #334155;color:#dbeafe}.btn{background:var(--blue);border:0;font-weight:800;color:white;margin-top:14px;cursor:pointer}.grade{font-size:27px;font-weight:900;margin-bottom:8px}.good{color:var(--green)}.ok{color:var(--yellow)}.bad{color:var(--red)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#0b1220;border:1px solid #273244;border-radius:14px;padding:12px}.k{color:var(--muted);font-size:13px}.v{font-size:20px;font-weight:800;margin-top:3px}.big{grid-column:1/-1}.big .v{font-size:30px}
+.pro{border-color:#1d4ed8;background:linear-gradient(180deg,#0b1b30,#0b1220)}.free{border-color:#475569}.pill{display:inline-block;border:1px solid #334155;background:#0b1220;border-radius:999px;padding:7px 10px;color:#cbd5e1;font-size:13px;margin:4px}.error{border:1px solid #7f1d1d;background:#2a1116;color:#fecaca;border-radius:12px;padding:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid #263244;padding:8px;text-align:left;color:#dbeafe}th{color:#93a4b8}a{color:#7dd3fc}.feedback{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.feedback button{font-size:13px;padding:10px}
+@media(max-width:850px){.wrap{padding:10px}.grid{grid-template-columns:1fr}.row,.row2{grid-template-columns:1fr}h1{font-size:26px}.top{padding:10px 0}.feedback{grid-template-columns:1fr 1fr}.card{border-radius:16px;padding:14px}.v{font-size:19px}.big .v{font-size:26px}}
+
+.mobile-nav{position:fixed;left:0;right:0;bottom:0;background:rgba(7,17,31,.96);border-top:1px solid #263244;display:none;z-index:99;padding:8px 10px env(safe-area-inset-bottom)}
+.mobile-nav a{flex:1;text-align:center;color:#dbeafe;text-decoration:none;font-size:13px;padding:9px 4px;border-radius:12px}
+.mobile-nav a:active,.mobile-nav a:hover{background:#0b1220}
+.install-tip{display:none;background:#0b1220;border:1px solid #1d4ed8;border-radius:14px;padding:12px;margin:12px 0;color:#cbd5e1}
+@media(max-width:850px){
+  body{font-size:16px;padding-bottom:74px}
+  .wrap{padding:10px 10px 18px}
+  .top{position:sticky;top:0}
+  .topbar{align-items:flex-start}
+  h1{font-size:24px;line-height:1.15}
+  .sub{font-size:14px}
+  .lang{max-width:138px;font-size:14px;padding:10px}
+  .grid{grid-template-columns:1fr!important;gap:10px}
+  .card{margin:10px 0;padding:14px;border-radius:18px}
+  input,textarea,button,select{font-size:16px;min-height:48px}
+  input[type=file]{min-height:52px}
+  textarea{min-height:150px}
+  .row,.row2{grid-template-columns:1fr!important;gap:8px}
+  .stats{grid-template-columns:1fr 1fr}
+  .stat{padding:11px;border-radius:14px}
+  .v{font-size:18px}
+  .big .v{font-size:25px}
+  .grade{font-size:24px;line-height:1.25}
+  table{display:block;overflow-x:auto;white-space:nowrap}
+  .mobile-nav{display:flex}
+  .install-tip{display:block}
+}
+
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap" style="padding-top:0;padding-bottom:0">
+  <div class="topbar">
+    <div>
+      <h1 data-i18n="title">Uber AI Cloud V8.0</h1>
+      <div class="sub" data-i18n="subtitle">云端测试版 · 外网访问 · HTTPS后GPS更稳定</div>
+    </div>
+    <select id="languageSelect" class="lang" onchange="setLanguage(this.value)">
+      <option value="zh">简体中文</option>
+      <option value="en">English</option>
+      <option value="es">Español</option>
+      
+    </select>
+  </div>
+</div></div></div>
+<div class="wrap">
+
+<div class="install-tip">
+  手机使用提示：部署到云端 HTTPS 后，别人可直接用网址测试；手机可点“分享”→“添加到主屏幕”。
+</div>
+
+{% if error %}<div class="error">{{ error }}</div>{% endif %}
+<div class="grid">
+<form id="analyze" method="post" enctype="multipart/form-data" class="card">
+  <label data-i18n="plan_label">版本模式</label>
+  <select name="plan">
+    <option value="free" {% if form.plan=='free' %}selected{% endif %} data-i18n="free_option">免费版：基础计算</option>
+    <option value="pro" {% if form.plan!='free' %}selected{% endif %} data-i18n="pro_option">Pro版：AI评分 + 风险 + 多指标建议</option>
+  </select>
+  <input type="hidden" name="lat" id="lat">
+  <input type="hidden" name="lon" id="lon">
+  <div class="stat" style="margin-top:10px">
+    <div class="k">GPS定位</div>
+    <div class="v" id="gpsStatus">未获取</div>
+    <button class="btn" type="button" onclick="getLocation()">获取当前位置</button>
+    <button class="btn secondary" type="button" onclick="useManualLocation()" style="margin-top:8px">手动输入当前位置</button>
+    <div id="manualGpsBox" style="display:none;margin-top:10px">
+      <label>手动GPS / 城市</label>
+      <input id="manualGpsInput" placeholder="例如：34.090295,-118.009022 或 Los Angeles">
+      <button class="btn secondary" type="button" onclick="saveManualLocation()" style="margin-top:8px">保存手动位置</button>
+    </div>
+    <p class="sub" style="margin-top:8px">iPhone/Chrome 在 http://192.168.x.x 这种局域网地址下，可能会因为不是HTTPS而禁止网页GPS。定位失败时可以手动输入，经纬度会用于AI评分。</p>
+  </div>
+  <label data-i18n="upload_label">上传订单截图</label><input type="file" name="screenshot" accept="image/*">
+  <label data-i18n="ocr_label">订单识别文字</label><textarea name="ocr" placeholder="上传截图自动识别；也可以粘贴订单文字">{{ form.ocr }}</textarea>
+  <div class="row">
+    <div><label data-i18n="income_label">收入 $</label><input name="income" value="{{ form.income }}" placeholder="8.20"></div>
+    <div><label data-i18n="miles_label">英里 miles</label><input name="miles" value="{{ form.miles }}" placeholder="0.40"></div>
+    <div><label data-i18n="time_label">时间 分钟</label><input name="minutes" value="{{ form.minutes }}" placeholder="5"></div>
+  </div>
+  <div class="row2">
+    <div><label data-i18n="gas_label">油价 $/加仑</label><input name="gas_price" value="{{ form.gas_price }}"></div>
+    <div><label data-i18n="mpg_label">油耗 MPG</label><input name="mpg" value="{{ form.mpg }}"></div>
+  </div>
+  <label data-i18n="wear_label">车辆损耗 $/mile</label><input name="wear_rate" value="{{ form.wear_rate }}">
+  <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="consent_share" data-i18n="consent_label">同意保存匿名订单数据，用于提升AI准确率</label>
+  <button class="btn" type="submit" data-i18n="analyze_btn" data-i18n="analyze_btn">上传并分析</button>
+</form>
+
+<div class="card {% if result and result.plan=='pro' %}pro{% else %}free{% endif %}">
+{% if result %}
+  <div class="grade {{ result.css_class }}">{{ result.grade }}</div>
+  <div class="sub">{{ result.advice }}</div>
+  {% if result.plan == 'pro' %}
+  <div class="stat big pro"><div class="k">Pro AI 接单决策</div><div class="v">{{ result.score }}/100 · {{ result.risk }} · {{ result.action }}</div><div class="sub">{{ result.pro_reason }} {{ result.pro_warning }}</div></div>
+  {% endif %}
+  <div class="stats">
+    <div class="stat big"><div class="k">UberX标准</div><div class="v">{{ result.uberx_level }}</div></div>
+    <div class="stat"><div class="k">收入</div><div class="v">{{ money(result.income) }}</div></div>
+    <div class="stat"><div class="k">英里</div><div class="v">{{ "%.2f"|format(result.miles) }}</div></div>
+    <div class="stat"><div class="k">行程时间</div><div class="v">{{ "%.0f"|format(result.minutes) }} 分钟</div></div>
+    <div class="stat"><div class="k">每英里收入</div><div class="v">{{ money(result.gross_per_mile) }}</div></div>
+    <div class="stat"><div class="k">每小时净利</div><div class="v">{{ money(result.net_per_hour) }}</div></div>
+    <div class="stat"><div class="k">每英里净利</div><div class="v">{{ money(result.net_per_mile) }}</div></div>
+    <div class="stat big"><div class="k">净利润</div><div class="v">{{ money(result.net_profit) }}</div></div>
+  </div>
+  {% if order_id %}
+  <form action="/feedback/{{ order_id }}" method="post" class="stat big" style="margin-top:10px">
+    <div class="k">反馈学习</div>
+    <div class="feedback">
+      <button name="feedback" value="accurate">准确</button><button name="feedback" value="wrong">不准确</button><button name="feedback" value="accepted">我接了</button><button name="feedback" value="rejected">我拒了</button>
+    </div>
+    <label>备注</label><input name="note" placeholder="等待太久 / 回程没单 / OCR识别错">
+  </form>
+  {% endif %}
+{% else %}
+  <h2 style="margin-top:0">AI评分结果</h2><p class="sub">上传订单截图或输入收入、英里、时间后，右侧会显示接单建议、AI评分、风险等级、时薪和净利润。</p><span class="pill">AI评分</span><span class="pill">风险等级</span><span class="pill">接单动作</span><span class="pill">时薪分析</span>
+{% endif %}
+</div>
+</div>
+
+<div class="grid">
+<div class="card pro">
+  <h2 style="margin-top:0" data-i18n="batch_title">多订单对比（Pro）</h2>
+  <form action="/batch" method="post" enctype="multipart/form-data">
+    <label>上传多张订单截图</label>
+    <input type="file" name="screenshots" accept="image/*" multiple>
+    <p class="sub">可以一次选择多张 Uber 订单截图，系统会自动 OCR、提取收入/英里/时间，并按 AI 评分排序。</p>
+
+    <label>也可以粘贴多个订单文字（可选）</label>
+    <textarea name="batch_text" placeholder="每个订单空一行或用 --- 分隔。"></textarea>
+    <div class="row">
+      <div><label>订单类型</label><select name="order_type"><option value="uberx">UberX</option><option value="comfort">Comfort</option><option value="uberxl">UberXL</option><option value="black">Black</option><option value="airport">Airport</option><option value="reservation">Reservation</option><option value="shared">Share</option><option value="eats">Eats</option></select></div>
+      <div><label>油价</label><input name="gas_price" value="5.5"></div>
+      <div><label>MPG</label><input name="mpg" value="38"></div>
+      <div><label>损耗</label><input name="wear_rate" value="0.25"></div>
+    </div>
+    <button class="btn" type="submit" data-i18n="batch_btn" data-i18n="batch_btn">上传并对比多个订单</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0" data-i18n="history_title">历史订单统计</h2>
+  <div class="stats">
+    <div class="stat"><div class="k" data-i18n="today_income">今日收入</div><div class="v">{{ money(today.income) }}</div></div>
+    <div class="stat"><div class="k" data-i18n="today_net">今日净利</div><div class="v">{{ money(today.net) }}</div></div>
+    <div class="stat"><div class="k" data-i18n="avg_hourly">平均时薪</div><div class="v">{{ money(summary.avg_nph) }}</div></div>
+    <div class="stat"><div class="k" data-i18n="avg_score">AI平均评分</div><div class="v">{{ "%.0f"|format(summary.avg_score) }}</div></div>
+  </div>
+  <p><a href="/export">导出CSV数据</a></p>
+</div>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0" data-i18n="recent_orders">最近订单</h2>
+  <table><thead><tr><th>时间</th><th>收入</th><th>英里</th><th>净利</th><th>时薪</th><th>评分</th><th>建议</th><th>反馈</th></tr></thead>
+  <tbody>{% for r in rows %}<tr><td>{{ r.created_at }}</td><td>{{ money(r.income) }}</td><td>{{ "%.2f"|format(r.miles) }}</td><td>{{ money(r.net_profit) }}</td><td>{{ money(r.net_per_hour) }}</td><td>{{ r.score or "" }}</td><td>{{ r.grade }}</td><td>{{ r.user_feedback or "" }}</td></tr>{% endfor %}</tbody></table>
+</div>
+
+<div class="card pro">
+  <h2 style="margin-top:0" data-i18n="user_feedback">用户反馈</h2>
+  <p class="sub">这里用来收集测试反馈，后面用于改进产品和训练更准的 AI 接单逻辑。</p>
+  <form action="/app_feedback" method="post">
+    <div class="row">
+      <div>
+        <label>反馈类型</label>
+        <select name="feedback_type">
+          <option value="ocr">OCR识别问题</option>
+          <option value="ai_advice">AI建议不准</option>
+          <option value="ui">界面不好用</option>
+          <option value="feature">想增加新功能</option>
+          <option value="bug">Bug错误</option>
+          <option value="other">其他</option>
+        </select>
+      </div>
+      <div>
+        <label>满意度</label>
+        <select name="rating">
+          <option value="5">5 - 很好</option>
+          <option value="4">4 - 还不错</option>
+          <option value="3">3 - 一般</option>
+          <option value="2">2 - 不好用</option>
+          <option value="1">1 - 很差</option>
+        </select>
+      </div>
+      <div>
+        <label>是否影响使用</label>
+        <select name="impact">
+          <option value="low">小问题</option>
+          <option value="medium">影响使用</option>
+          <option value="high">严重问题</option>
+        </select>
+      </div>
+    </div>
+    <label>具体反馈</label>
+    <textarea name="message" placeholder="例如：这张截图时间识别错了；AI建议应该是可接；希望增加LAX机场逻辑。"></textarea>
+    <button class="btn" type="submit" data-i18n="submit_feedback" data-i18n="submit_feedback">提交反馈</button>
+  </form>
+</div>
+
+</div>
+
+
+<script>
+const I18N = {
+  zh: {
+    title:"Uber AI Cloud V8.0", subtitle:"云端测试版 · 外网访问 · HTTPS后GPS更稳定",
+    plan_label:"版本模式", free_option:"免费版：基础计算", pro_option:"Pro版：AI评分 + 风险 + 多指标建议",
+    order_type_label:"Uber订单类型", upload_label:"上传订单截图", ocr_label:"订单识别文字", income_label:"收入 $", miles_label:"英里 miles", time_label:"时间 分钟",
+    gas_label:"油价 $/加仑", mpg_label:"油耗 MPG", wear_label:"车辆损耗 $/mile", consent_label:"同意保存匿名订单数据，用于提升AI准确率",
+    analyze_btn:"上传并分析", plan_structure:"AI评分结果", batch_title:"多订单对比（Pro）", batch_btn:"上传并对比多个订单",
+    history_title:"历史订单统计", today_income:"今日收入", today_net:"今日净利", avg_hourly:"平均时薪", avg_score:"AI平均评分",
+    recent_orders:"最近订单", user_feedback:"用户反馈", submit_feedback:"提交反馈"
+  },
+  en: {
+    title:"Uber AI Cloud V8.0", subtitle:"Better result translation · Korean/English/Spanish AI output",
+    plan_label:"Plan", free_option:"Free: Basic calculator", pro_option:"Pro: AI score + risk + multi-metric advice",
+    order_type_label:"Uber order type", upload_label:"Upload order screenshot", ocr_label:"Recognized order text", income_label:"Income $", miles_label:"Miles", time_label:"Time minutes",
+    gas_label:"Gas price $/gal", mpg_label:"MPG", wear_label:"Vehicle cost $/mile", consent_label:"I agree to save anonymous order data to improve AI accuracy",
+    analyze_btn:"Upload and analyze", plan_structure:"Free / Pro structure", batch_title:"Multi-order comparison (Pro)", batch_btn:"Upload and compare orders",
+    history_title:"Order history stats", today_income:"Today income", today_net:"Today net profit", avg_hourly:"Average hourly", avg_score:"Average AI score",
+    recent_orders:"Recent orders", user_feedback:"User feedback", submit_feedback:"Submit feedback"
+  },
+  es: {
+    title:"Uber AI Cloud V8.0", subtitle:"Selector de idioma · Precios por ciudad · GPS",
+    plan_label:"Plan", free_option:"Gratis: cálculo básico", pro_option:"Pro: puntuación AI + riesgo + consejos",
+    order_type_label:"Tipo de pedido Uber", upload_label:"Subir captura del pedido", ocr_label:"Texto reconocido", income_label:"Ingreso $", miles_label:"Millas", time_label:"Tiempo minutos",
+    gas_label:"Gasolina $/galón", mpg_label:"MPG", wear_label:"Costo del vehículo $/milla", consent_label:"Acepto guardar datos anónimos para mejorar la IA",
+    analyze_btn:"Subir y analizar", plan_structure:"Estructura Gratis / Pro", batch_title:"Comparación de múltiples pedidos (Pro)", batch_btn:"Subir y comparar pedidos",
+    history_title:"Estadísticas históricas", today_income:"Ingreso de hoy", today_net:"Ganancia neta de hoy", avg_hourly:"Promedio por hora", avg_score:"Puntuación AI promedio",
+    recent_orders:"Pedidos recientes", user_feedback:"Comentarios del usuario", submit_feedback:"Enviar comentario"
+  },
+  ko: {
+    title:"Uber AI Cloud V8.0", subtitle:"언어 선택 · 도시별 요금 기준 · GPS 시장 평가",
+    plan_label:"플랜", free_option:"무료: 기본 계산", pro_option:"Pro: AI 점수 + 위험도 + 종합 조언",
+    order_type_label:"Uber 주문 유형", upload_label:"주문 스크린샷 업로드", ocr_label:"인식된 주문 텍스트", income_label:"수입 $", miles_label:"마일", time_label:"시간(분)",
+    gas_label:"기름값 $/갤런", mpg_label:"MPG", wear_label:"차량 비용 $/마일", consent_label:"AI 정확도 향상을 위해 익명 주문 데이터 저장에 동의합니다",
+    analyze_btn:"업로드 및 분석", plan_structure:"무료 / Pro 구조", batch_title:"여러 주문 비교 (Pro)", batch_btn:"업로드 및 주문 비교",
+    history_title:"주문 기록 통계", today_income:"오늘 수입", today_net:"오늘 순이익", avg_hourly:"평균 시급", avg_score:"평균 AI 점수",
+    recent_orders:"최근 주문", user_feedback:"사용자 피드백", submit_feedback:"피드백 제출"
+  }
+};
+function setLanguage(lang){
+  localStorage.setItem("uber_ai_lang", lang);
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const key = el.getAttribute("data-i18n");
+    if(I18N[lang] && I18N[lang][key]) el.textContent = I18N[lang][key];
+  });
+  const sel = document.getElementById("languageSelect");
+  if(sel) sel.value = lang;
+}
+window.addEventListener("load", ()=>{
+  setLanguage(localStorage.getItem("uber_ai_lang") || "zh");
+});
+</script>
+
+<script>
+function getLocation(){
+  const s = document.getElementById("gpsStatus");
+  if(!navigator.geolocation){
+    s.textContent = "浏览器不支持GPS，请手动输入";
+    useManualLocation();
+    return;
+  }
+
+  const isLocalhost = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  const isHttps = location.protocol === "https:";
+  if(!isHttps && !isLocalhost){
+    s.textContent = "当前是HTTP局域网地址，iPhone可能禁止GPS；可手动输入";
+  } else {
+    s.textContent = "正在获取...";
+  }
+
+  navigator.geolocation.getCurrentPosition(function(pos){
+    const lat = pos.coords.latitude.toFixed(6);
+    const lon = pos.coords.longitude.toFixed(6);
+    document.getElementById("lat").value = lat;
+    document.getElementById("lon").value = lon;
+    s.textContent = lat + ", " + lon;
+    localStorage.setItem("manual_lat", lat);
+    localStorage.setItem("manual_lon", lon);
+  }, function(err){
+    let msg = "定位失败";
+    if(err && err.code === 1) msg = "定位被拒绝，请检查浏览器位置权限";
+    if(err && err.code === 2) msg = "定位不可用，可手动输入";
+    if(err && err.code === 3) msg = "定位超时，可手动输入";
+    if(!isHttps && !isLocalhost) msg = "iPhone/Chrome 对HTTP局域网页面限制GPS，请手动输入";
+    s.textContent = msg;
+    useManualLocation();
+    const oldLat = localStorage.getItem("manual_lat");
+    const oldLon = localStorage.getItem("manual_lon");
+    if(oldLat && oldLon){
+      document.getElementById("lat").value = oldLat;
+      document.getElementById("lon").value = oldLon;
+      s.textContent = oldLat + ", " + oldLon + "（已使用上次保存）";
+    }
+  }, {enableHighAccuracy:true, timeout:12000, maximumAge:60000});
+}
+
+function useManualLocation(){
+  const box = document.getElementById("manualGpsBox");
+  if(box) box.style.display = "block";
+}
+
+function saveManualLocation(){
+  const input = document.getElementById("manualGpsInput");
+  const s = document.getElementById("gpsStatus");
+  const val = (input.value || "").trim();
+  if(!val){
+    s.textContent = "请输入经纬度或城市";
+    return;
+  }
+
+  const cityMap = {
+    "los angeles": ["34.052235", "-118.243683"],
+    "la": ["34.052235", "-118.243683"],
+    "arcadia": ["34.139729", "-118.035344"],
+    "temple city": ["34.107230", "-118.057846"],
+    "san gabriel": ["34.096111", "-118.105833"],
+    "irvine": ["33.684567", "-117.826505"],
+    "huntington beach": ["33.659484", "-117.998802"],
+    "new york": ["40.712776", "-74.005974"],
+    "manhattan": ["40.7831", "-73.9712"],
+    "san francisco": ["37.774929", "-122.419418"],
+    "chicago": ["41.878113", "-87.629799"],
+    "dallas": ["32.776665", "-96.796989"],
+    "houston": ["29.760427", "-95.369804"],
+    "miami": ["25.761681", "-80.191788"],
+    "las vegas": ["36.169941", "-115.139832"]
+  };
+
+  let lat = "", lon = "";
+  const lower = val.toLowerCase();
+  if(cityMap[lower]){
+    lat = cityMap[lower][0];
+    lon = cityMap[lower][1];
+  } else {
+    const parts = val.split(",").map(x => x.trim());
+    if(parts.length >= 2 && !isNaN(parseFloat(parts[0])) && !isNaN(parseFloat(parts[1]))){
+      lat = parseFloat(parts[0]).toFixed(6);
+      lon = parseFloat(parts[1]).toFixed(6);
+    }
+  }
+
+  if(!lat || !lon){
+    s.textContent = "格式错误：请输入 34.090295,-118.009022 或 Los Angeles";
+    return;
+  }
+
+  document.getElementById("lat").value = lat;
+  document.getElementById("lon").value = lon;
+  localStorage.setItem("manual_lat", lat);
+  localStorage.setItem("manual_lon", lon);
+  s.textContent = lat + ", " + lon + "（手动位置）";
+}
+
+window.addEventListener("load", function(){
+  const oldLat = localStorage.getItem("manual_lat");
+  const oldLon = localStorage.getItem("manual_lon");
+  if(oldLat && oldLon){
+    document.getElementById("lat").value = oldLat;
+    document.getElementById("lon").value = oldLon;
+    const s = document.getElementById("gpsStatus");
+    if(s) s.textContent = oldLat + ", " + oldLon + "（已保存）";
+  }
+  setTimeout(getLocation, 500);
+});</script>
+
+
+<script>
+const DYNAMIC_TRANSLATIONS = {
+  en: [
+    ["不建议：长途低收益路线","Not recommended: long low-profit route"],
+    ["不建议：长途回程风险高","Not recommended: high return-trip risk"],
+    ["不建议：地址路线风险高","Not recommended: high address-route risk"],
+    ["不建议：低于当地最低可接线","Not recommended: below local minimum"],
+    ["不建议：低于当地普通线","Not recommended: below local normal line"],
+    ["强烈建议：当地神单","Strongly recommended: excellent local order"],
+    ["建议：当地好单","Recommended: good local order"],
+    ["普通可接单","Normal acceptable order"],
+    ["普通但时薪偏低","Normal order but low hourly profit"],
+    ["单价偏低但时薪可接","Low per-mile but acceptable hourly"],
+    ["好单但耗时偏长","Good order but too time-consuming"],
+    ["高风险","High risk"], ["低风险","Low risk"], ["中等风险","Medium risk"], ["中低风险","Medium-low risk"],
+    ["建议拒绝","Recommend rejecting"], ["建议接单","Recommend accepting"], ["马上接","Accept now"], ["可接","Acceptable"], ["看情况","Depends"],
+    ["当前市场：","Current market: "], ["订单类型：","Order type: "], ["每英里收入","Per-mile income"],
+    ["属于","is"], ["净利润","Net profit"], ["预计每小时净利润","Estimated hourly net profit"],
+    ["时薪偏低","Low hourly profit"], ["普通时薪","Normal hourly profit"], ["好时薪","Good hourly profit"], ["优秀时薪","Excellent hourly profit"],
+    ["低于当地最低","below local minimum"], ["当地最低","local minimum"], ["当地好时薪","local good hourly"],
+    ["低于当地普通线","below local normal line"], ["当地普通","local normal"], ["当地好单","local good order"], ["当地神单","local excellent order"],
+    ["Pro AI 接单决策","Pro AI decision"], ["AI评分","AI score"], ["风险","Risk"], ["动作","Action"],
+    ["当地市场","Local market"], ["类型","Type"], ["最低可接","Minimum acceptable"], ["好单","Good order"], ["神单","Excellent order"],
+    ["最低时薪","Minimum hourly"], ["好时薪","Good hourly"],
+    ["区域AI","Area AI"], ["地址路线AI","Address route AI"], ["路线AI","Route AI"], ["高峰AI","Rush-hour AI"],
+    ["GPS定位","GPS location"], ["订单底部地址OCR","Bottom-address OCR"], ["订单截图路线文字","Screenshot route text"],
+    ["华人区优质短单","Asian-area good short orders"], ["普通","Normal"], ["未定位","Not located"], ["夜间低堵车","Night low traffic"],
+    ["起点：","Pickup: "], ["终点：","Dropoff: "],
+    ["地址路线识别为 LA → Orange County 方向，长途回程空驶风险高。","Address route detected as LA → Orange County; high empty-return risk."],
+    ["终点接近 Huntington Beach / PCH 海边区域，晚高峰和回LA回程风险较高。","Dropoff is near Huntington Beach / PCH; higher rush-hour and return-to-LA risk."],
+    ["地址路线为长途单：40英里以上，空车回程风险明显。","Long route: over 40 miles, clear empty-return risk."],
+    ["地址路线为中长途单，需要考虑回程单概率。","Medium/long route: consider chance of return trip."],
+    ["订单耗时超过2小时，实际时薪风险高。","Trip takes over 2 hours; real hourly profit risk is high."],
+    ["订单耗时较长，容易拖低真实时薪。","Long trip time can reduce real hourly profit."],
+    ["长途低每英里收入组合，不适合接。","Long distance with low per-mile pay is not worth accepting."],
+    ["预计每小时净利低于$20，低于多数城市最低可接受时薪。","Estimated hourly net is below $20, under the minimum acceptable level in most cities."],
+    ["长途订单：40英里以上，必须考虑空车回程和真实时薪。","Long trip over 40 miles; consider empty return and real hourly profit."],
+    ["中长途订单：注意回程单概率。","Medium/long trip: consider return-trip probability."],
+    ["耗时超过2小时，表面收入容易误导，实际时薪风险高。","Over 2 hours: gross pay can be misleading; real hourly profit risk is high."],
+    ["长途低每英里收入组合，通常不适合接。","Long distance plus low per-mile pay is usually not worth accepting."],
+    ["GPS显示在 Arcadia / Temple City / San Gabriel 附近，短单密度较好，夜间相对稳定，适合连续短单。","GPS shows Arcadia / Temple City / San Gabriel; good short-order density and relatively stable at night."],
+    ["截图文字检测到 Irvine。","Screenshot text detected Irvine."],
+    ["当前夜间堵车较少，但要注意安全和回程单。","Traffic is lighter at night, but watch safety and return trips."],
+    ["未匹配到具体城市，使用美国通用 UberX 评估标准。","No specific city matched; using US default UberX standards."],
+    ["订单类型：UberX 基础标准。","Order type: UberX base standard."],
+    ["起点","Pickup"], ["终点","Dropoff"],
+    ["收入","Income"], ["英里","Miles"], ["行程时间","Trip time"], ["每小时净利","Hourly net"], ["每英里净利","Net per mile"],
+    ["车辆损耗","Vehicle cost"], ["油费","Fuel cost"], ["每英里收入","Income per mile"]
+  ],
+  es: [
+    ["不建议：长途低收益路线","No recomendado: ruta larga de baja ganancia"],
+    ["高风险","Riesgo alto"], ["低风险","Riesgo bajo"], ["建议拒绝","Rechazar"], ["建议接单","Aceptar"],
+    ["当前市场：","Mercado actual: "], ["订单类型：","Tipo de pedido: "], ["净利润","Ganancia neta"],
+    ["AI评分","Puntuación AI"], ["风险","Riesgo"], ["动作","Acción"], ["区域AI","AI de zona"], ["地址路线AI","AI de ruta por dirección"],
+    ["起点：","Recogida: "], ["终点：","Destino: "], ["收入","Ingreso"], ["英里","Millas"], ["行程时间","Tiempo de viaje"]
+  ],
+  ko: [
+    ["不建议：长途低收益路线","비추천: 장거리 저수익 경로"],
+    ["高风险","높은 위험"], ["低风险","낮은 위험"], ["建议拒绝","거절 권장"], ["建议接单","수락 권장"],
+    ["当前市场：","현재 시장: "], ["订单类型：","주문 유형: "], ["净利润","순이익"],
+    ["AI评分","AI 점수"], ["风险","위험"], ["动作","조치"], ["区域AI","지역 AI"], ["地址路线AI","주소 경로 AI"],
+    ["起点：","픽업: "], ["终点：","도착: "], ["收入","수입"], ["英里","마일"], ["行程时间","이동 시간"]
+  ]
+};
+
+function translateDynamicText(lang){
+  if(lang === "zh") return;
+  const pairs = DYNAMIC_TRANSLATIONS[lang] || DYNAMIC_TRANSLATIONS.en;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      const parent = node.parentElement;
+      if(!parent) return NodeFilter.FILTER_REJECT;
+      if(["SCRIPT","STYLE","TEXTAREA","INPUT","OPTION"].includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(node=>{
+    let t = node.nodeValue;
+    pairs.forEach(([cn, tr])=>{ t = t.split(cn).join(tr); });
+    node.nodeValue = t;
+  });
+}
+
+const oldSetLanguage = window.setLanguage;
+window.setLanguage = function(lang){
+  if(oldSetLanguage) oldSetLanguage(lang);
+  setTimeout(()=>translateDynamicText(lang), 50);
+};
+window.addEventListener("load", ()=>{
+  const lang = localStorage.getItem("uber_ai_lang") || "zh";
+  setTimeout(()=>translateDynamicText(lang), 100);
+});
+</script>
+
+
+<script>
+const AI_RESULT_TRANSLATIONS_V65 = {
+  en: [
+    ["建议：当地好单","Recommended: good local order"],
+    ["强烈建议：当地神单","Strongly recommended: excellent local order"],
+    ["不建议：长途低收益路线","Not recommended: long low-profit route"],
+    ["不建议：低于当地普通线","Not recommended: below local normal line"],
+    ["不建议：低于当地最低可接线","Not recommended: below local minimum acceptable line"],
+    ["普通可接单","Normal acceptable order"],
+    ["普通但时薪偏低","Normal order but low hourly pay"],
+    ["当地好单","local good order"],
+    ["当地神单","local excellent order"],
+    ["低风险","Low risk"], ["高风险","High risk"], ["中等风险","Medium risk"], ["中低风险","Medium-low risk"],
+    ["建议接单","Recommend accepting"], ["建议拒绝","Recommend rejecting"], ["马上接","Accept now"], ["可接","Acceptable"], ["看情况","Depends"],
+    ["Pro AI 接单决策","Pro AI decision"],
+    ["AI评分","AI score"], ["风险","Risk"], ["动作","Action"],
+    ["当前市场","Current market"], ["当地市场","Local market"], ["订单类型","Order type"], ["类型","Type"],
+    ["每英里收入","Income per mile"], ["每小时净利","Hourly net"], ["预计每小时净利润","Estimated hourly net profit"],
+    ["净利润","Net profit"], ["普通时薪","Normal hourly pay"], ["好时薪","Good hourly pay"], ["最低时薪","Minimum hourly pay"],
+    ["最低可接","Minimum acceptable"], ["好单","Good order"], ["神单","Excellent order"],
+    ["区域AI","Area AI"], ["地址路线AI","Address-route AI"], ["路线AI","Route AI"], ["高峰AI","Rush-hour AI"],
+    ["GPS定位","GPS location"], ["订单底部地址OCR","Bottom-address OCR"], ["订单截图路线文字","Screenshot route text"],
+    ["华人区优质短单","Asian-area quality short-order zone"], ["洛杉矶城区","Los Angeles urban area"], ["普通","Normal"], ["未定位","Not located"],
+    ["夜间低堵车","Night / low traffic"], ["暂无明显风险","No obvious risk"], ["未匹配到具体城市","No specific city matched"],
+    ["使用美国通用 UberX 评估标准","Using US default UberX evaluation standard"],
+    ["UberX 基础标准","UberX base standard"],
+    ["起点","Pickup"], ["终点","Dropoff"], ["到达","Dropoff"],
+    ["订单底部地址","order bottom address"], ["截图文字检测到","Screenshot text detected"],
+    ["当前夜间堵车较少","Traffic is lighter at night"], ["但是要注意安全和回程单","but watch safety and return trips"],
+    ["短单密度较好","good short-order density"], ["夜间相对稳定","relatively stable at night"], ["适合连续短单","good for consecutive short trips"],
+    ["地址路线识别为","Address route detected as"], ["长途回程空驶风险高","high empty-return risk on long route"],
+    ["订单耗时较长","Trip takes a long time"], ["容易拖低真实时薪","can reduce real hourly pay"],
+    ["行程时间","Trip time"], ["行程距离","Trip distance"], ["收入","Income"], ["英里","Miles"], ["时间","Time"], ["分钟","minutes"]
+  ],
+  es: [
+    ["建议：当地好单","Recomendado: buen pedido local"],
+    ["强烈建议：当地神单","Muy recomendado: pedido excelente local"],
+    ["不建议：长途低收益路线","No recomendado: ruta larga de baja ganancia"],
+    ["低风险","Riesgo bajo"], ["高风险","Riesgo alto"], ["中等风险","Riesgo medio"], ["中低风险","Riesgo medio-bajo"],
+    ["建议接单","Aceptar recomendado"], ["建议拒绝","Rechazar recomendado"], ["可接","Aceptable"],
+    ["Pro AI 接单决策","Decisión Pro AI"], ["AI评分","Puntuación AI"], ["风险","Riesgo"], ["动作","Acción"],
+    ["当前市场","Mercado actual"], ["当地市场","Mercado local"], ["订单类型","Tipo de pedido"], ["每英里收入","Ingreso por milla"],
+    ["每小时净利","Ganancia neta por hora"], ["净利润","Ganancia neta"], ["区域AI","AI de zona"], ["地址路线AI","AI de ruta por dirección"],
+    ["路线AI","AI de ruta"], ["高峰AI","AI de hora pico"], ["GPS定位","GPS"], ["起点","Recogida"], ["终点","Destino"],
+    ["普通时薪","Pago horario normal"], ["好时薪","Buen pago horario"], ["最低时薪","Pago mínimo por hora"]
+  ],
+  ko: [
+    ["建议：当地好单","권장: 현지 좋은 주문"],
+    ["强烈建议：当地神单","강력 추천: 현지 최고 주문"],
+    ["不建议：长途低收益路线","비추천: 장거리 저수익 경로"],
+    ["不建议：低于当地普通线","비추천: 현지 일반 기준 미달"],
+    ["不建议：低于当地最低可接线","비추천: 현지 최소 수락 기준 미달"],
+    ["普通可接单","일반 수락 가능 주문"],
+    ["普通但时薪偏低","일반 주문이지만 시급 낮음"],
+    ["当地好单","현지 좋은 주문"],
+    ["当地神单","현지 최고 주문"],
+    ["低风险","낮은 위험"], ["高风险","높은 위험"], ["中等风险","중간 위험"], ["中低风险","중하 위험"],
+    ["建议接单","수락 권장"], ["建议拒绝","거절 권장"], ["马上接","즉시 수락"], ["可接","수락 가능"], ["看情况","상황에 따라"],
+    ["Pro AI 接单决策","Pro AI 주문 결정"],
+    ["AI评分","AI 점수"], ["风险","위험"], ["动作","조치"],
+    ["当前市场","현재 시장"], ["当地市场","현지 시장"], ["订单类型","주문 유형"], ["类型","유형"],
+    ["每英里收入","마일당 수입"], ["每小时净利","시간당 순이익"], ["预计每小时净利润","예상 시간당 순이익"],
+    ["净利润","순이익"], ["普通时薪","일반 시급"], ["好时薪","좋은 시급"], ["最低时薪","최저 시급"],
+    ["最低可接","최소 수락"], ["好单","좋은 주문"], ["神单","최고 주문"],
+    ["区域AI","지역 AI"], ["地址路线AI","주소 경로 AI"], ["路线AI","경로 AI"], ["高峰AI","피크타임 AI"],
+    ["GPS定位","GPS 위치"], ["订单底部地址OCR","주문 하단 주소 OCR"], ["订单截图路线文字","주문 스크린샷 경로 텍스트"],
+    ["华人区优质短单","아시아권 우수 단거리 주문 지역"], ["洛杉矶城区","로스앤젤레스 도심"], ["普通","일반"], ["未定位","미위치"],
+    ["夜间低堵车","야간 저교통"], ["暂无明显风险","뚜렷한 위험 없음"], ["未匹配到具体城市","구체적인 도시 미매칭"],
+    ["使用美国通用 UberX 评估标准","미국 공통 UberX 평가 기준 사용"],
+    ["UberX 基础标准","UberX 기본 기준"],
+    ["起点","픽업"], ["终点","도착"], ["到达","도착"],
+    ["订单底部地址","주문 하단 주소"], ["截图文字检测到","스크린샷 텍스트 감지"],
+    ["当前夜间堵车较少","현재 야간 교통량이 적음"], ["但是要注意安全和回程单","하지만 안전과 복귀 주문에 주의"],
+    ["短单密度较好","단거리 주문 밀도 좋음"], ["夜间相对稳定","야간 비교적 안정"], ["适合连续短单","연속 단거리 주문에 적합"],
+    ["地址路线识别为","주소 경로 식별"], ["长途回程空驶风险高","장거리 빈차 복귀 위험 높음"],
+    ["订单耗时较长","주문 시간이 김"], ["容易拖低真实时薪","실제 시급을 낮출 수 있음"],
+    ["行程时间","이동 시간"], ["行程距离","이동 거리"], ["收入","수입"], ["英里","마일"], ["时间","시간"], ["分钟","분"],
+    ["属于","분류"], ["低于当地普通线","현지 일반 기준 미달"], ["当地最低","현지 최저"], ["当地好时薪","현지 좋은 시급"]
+  ]
+};
+
+function deepTranslateVisibleTextV65(lang){
+  if(!lang || lang === "zh") return;
+  const pairs = AI_RESULT_TRANSLATIONS_V65[lang] || AI_RESULT_TRANSLATIONS_V65.en;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const parent = node.parentElement;
+      if(!parent || !node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      if(["SCRIPT","STYLE","TEXTAREA","INPUT","OPTION"].includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(node=>{
+    let t = node.nodeValue;
+    pairs.forEach(([a,b]) => { t = t.split(a).join(b); });
+    node.nodeValue = t;
+  });
+}
+
+function runV65Translation(){
+  const lang = localStorage.getItem("uber_ai_lang") || document.getElementById("languageSelect")?.value || "zh";
+  deepTranslateVisibleTextV65(lang);
+}
+
+window.addEventListener("load", ()=>{
+  setTimeout(runV65Translation, 100);
+  setTimeout(runV65Translation, 500);
+  setTimeout(runV65Translation, 1200);
+});
+document.addEventListener("change", (e)=>{
+  if(e.target && e.target.id === "languageSelect"){
+    setTimeout(runV65Translation, 100);
+    setTimeout(runV65Translation, 500);
+  }
+});
+</script>
+
+
+<nav class="mobile-nav">
+  <a href="#analyze">分析</a>
+  <a href="#compare">对比</a>
+  <a href="#history">历史</a>
+  <a href="#feedback">反馈</a>
+</nav>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
+</script>
+
+</body>
+</html
+<div class="card">
+  <h2 style="margin-top:0" data-i18n="plan_structure">免费版 / Pro版结构</h2>
+  <span class="pill">免费版：基础净利润</span>
+  <span class="pill">Pro：AI评分</span>
+  <span class="pill">Pro：风险等级</span>
+  <span class="pill">Pro：多订单对比</span>
+  <span class="pill">Pro：历史统计</span>
+  <p class="sub">免费版用于引流；Pro版用于收费，核心卖点是接单决策、时薪分析、历史学习。</p>
+</div>
+>
