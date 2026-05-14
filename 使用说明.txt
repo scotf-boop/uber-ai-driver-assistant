@@ -1,0 +1,20 @@
+Uber AI Cloud V8.0
+
+新增：
+1. 云端部署结构
+2. requirements.txt
+3. Procfile
+4. render.yaml
+5. 支持 Render / Railway / VPS 部署
+6. 别人不在你家 Wi-Fi 也可以通过云端网址测试
+7. HTTPS 部署后，手机GPS会更稳定
+
+本地启动两步：
+1. 终端输入：
+python app.py
+
+2. 浏览器打开：
+http://127.0.0.1:5000
+
+云端部署请看：
+云端部署说明.txt
