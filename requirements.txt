@@ -1,5 +1,3 @@
 flask
-pillow
 werkzeug
-rapidocr-onnxruntime
 gunicorn
