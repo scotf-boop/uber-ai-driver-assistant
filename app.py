@@ -8,7 +8,7 @@ except Exception:
     pytesseract = None
 
 app = Flask(__name__)
-APP_VERSION = "V15 Professional"
+APP_VERSION = "V15.2 OCR Fix"
 
 RATE_RULES = [
     (1.0, "垃圾单", "不建议接", "低于 $1/mile，长期开会拉低收入。"),
@@ -25,57 +25,97 @@ def clean_text(text: str) -> str:
     return text
 
 
+def _to_float(raw: str):
+    try:
+        return float((raw or "").replace(',', '.'))
+    except Exception:
+        return None
+
+
 def extract_values(text: str):
+    """Robust Uber trip OCR extraction.
+
+    V15.2 fixes:
+    - Do not treat the number after 行程距离 as 1 mile when the nearby text is actually time.
+    - Prefer direct unit matches like 0.40 英里 / 48.15 英里.
+    - Parse 1分钟46秒 as 2 minutes for hourly-income calculation.
+    - Prefer the real total income line over 一口价 / tip lines by choosing the largest valid US$ amount.
+    """
     t = clean_text(text)
     compact = re.sub(r"\s+", " ", t)
     income = None
     miles = None
     minutes = None
 
-    # Income: prefer US$ / $ amounts, avoid one-price line if possible by choosing largest reasonable amount
+    # Income: choose the largest valid US$/$ amount.
+    # Uber detail pages often contain total income, one-price, and tip. The total is normally the largest.
     money_vals = []
     for m in re.finditer(r"(?:US\$|\$)\s*([0-9]{1,4}(?:[\.,][0-9]{1,2})?)", compact, re.I):
-        try:
-            v = float(m.group(1).replace(',', '.'))
-            if 2 <= v <= 2000:
-                money_vals.append(v)
-        except Exception:
-            pass
+        v = _to_float(m.group(1))
+        if v is not None and 2 <= v <= 2000:
+            money_vals.append(v)
     if money_vals:
         income = max(money_vals)
 
-    # distance near miles/英里
-    dist_patterns = [
-        r"([0-9]{1,4}(?:[\.,][0-9]{1,2})?)\s*(?:英里|mile|miles|mi\b)",
-        r"(?:行程距离|距离)\D{0,20}([0-9]{1,4}(?:[\.,][0-9]{1,2})?)",
-    ]
-    candidates = []
-    for p in dist_patterns:
-        for m in re.finditer(p, compact, re.I):
-            try:
-                v = float(m.group(1).replace(',', '.'))
-                if 0.1 <= v <= 1000:
-                    candidates.append(v)
-            except Exception:
-                pass
-    if candidates:
-        miles = max(candidates)
+    # Distance: first preference is explicit mile unit. Do NOT use max(), because OCR may put
+    # "行程时间 行程距离 1分钟46秒 0.40英里" and a loose distance pattern can capture the time number 1.
+    unit_miles = []
+    for m in re.finditer(r"([0-9]{1,4}(?:[\.,][0-9]{1,2})?)\s*(?:英\s*里|mile|miles|mi\b)", compact, re.I):
+        v = _to_float(m.group(1))
+        if v is not None and 0.05 <= v <= 1000:
+            unit_miles.append(v)
+    if unit_miles:
+        # last explicit mile value is usually the clean trip-distance field after the label
+        miles = unit_miles[-1]
+    else:
+        # fallback: inspect lines around 行程距离/距离 and prefer decimal-like numbers
+        fallback = []
+        lines = [ln.strip() for ln in t.splitlines() if ln.strip()]
+        for i, line in enumerate(lines):
+            low = line.lower()
+            if "行程距离" in line or "距离" in line or "mile" in low:
+                window = " ".join(lines[i:i+3])
+                for n in re.findall(r"[0-9]{1,4}(?:[\.,][0-9]{1,2})?", window):
+                    v = _to_float(n)
+                    if v is not None and 0.05 <= v <= 1000:
+                        fallback.append(v)
+        if fallback:
+            # Prefer decimal distances; otherwise use the last candidate.
+            decimal_vals = [v for v in fallback if abs(v - int(v)) > 1e-9]
+            miles = decimal_vals[-1] if decimal_vals else fallback[-1]
 
-    # time: Chinese/English hours minutes
+    # Time: parse hours/minutes/seconds. 1分钟46秒 is rounded up to 2 minutes.
     time_candidates = []
-    for m in re.finditer(r"([0-9]{1,2})\s*(?:小\s*时|hour|hours|hr|hrs)\s*([0-9]{1,2})?\s*(?:分\s*钟|minute|minutes|min|mins)?", compact, re.I):
+
+    for m in re.finditer(
+        r"([0-9]{1,2})\s*(?:小\s*时|hour|hours|hr|hrs)\s*([0-9]{1,2})?\s*(?:分\s*钟|minute|minutes|min|mins)?",
+        compact,
+        re.I,
+    ):
         h = int(m.group(1)); mm = int(m.group(2) or 0)
         if 0 <= h <= 20 and 0 <= mm < 60:
-            time_candidates.append(h*60+mm)
-    for m in re.finditer(r"([0-9]{1,4})\s*(?:分\s*钟|minute|minutes|min|mins)\b", compact, re.I):
+            time_candidates.append(h * 60 + mm)
+
+    for m in re.finditer(r"([0-9]{1,4})\s*分\s*钟\s*([0-9]{1,2})\s*秒", compact):
+        mm = int(m.group(1)); ss = int(m.group(2))
+        if 0 <= mm <= 2000 and 0 <= ss < 60:
+            time_candidates.append(mm + (1 if ss > 0 else 0))
+
+    for m in re.finditer(r"([0-9]{1,4})\s*(?:minute|minutes|min|mins)\s*([0-9]{1,2})?\s*(?:sec|secs|second|seconds)?", compact, re.I):
+        mm = int(m.group(1)); ss = int(m.group(2) or 0)
+        if 0 <= mm <= 2000 and 0 <= ss < 60:
+            time_candidates.append(mm + (1 if ss > 0 else 0))
+
+    # Chinese minutes without seconds, including OCR-spaced 分 钟.
+    for m in re.finditer(r"([0-9]{1,4})\s*分\s*钟(?!\s*[0-9]{1,2}\s*秒)", compact):
         mm = int(m.group(1))
         if 1 <= mm <= 2000:
             time_candidates.append(mm)
+
     if time_candidates:
         minutes = max(time_candidates)
 
     return income, miles, minutes
-
 
 def analyze(income, miles, minutes, pickup_miles=0.0, fuel_cost_per_mile=0.25):
     if not income or not miles or not minutes:
