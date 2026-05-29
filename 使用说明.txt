@@ -1,20 +1,15 @@
-Uber AI Cloud V8.0
+Uber AI Cloud V14 Professional OCR 使用说明
 
-新增：
-1. 云端部署结构
-2. requirements.txt
-3. Procfile
-4. render.yaml
-5. 支持 Render / Railway / VPS 部署
-6. 别人不在你家 Wi-Fi 也可以通过云端网址测试
-7. HTTPS 部署后，手机GPS会更稳定
+本版重点：
+1. 重写OCR模块，不再继续旧V13补丁。
+2. Uber深色截图会自动反色、放大、增强后再OCR。
+3. 专门识别：
+   - 总收入 US$8.20 / US$56.90
+   - 行程距离 0.40英里 / 48.15英里
+   - 行程时间 1分钟46秒 / 2小时28分钟
+4. 1分钟46秒会转换为1.77分钟参与时薪计算。
+5. 继续保留 GPS、路线AI、多语言、登录、历史统计、Render配置。
 
-本地启动两步：
-1. 终端输入：
+运行：
+pip install -r requirements.txt
 python app.py
-
-2. 浏览器打开：
-http://127.0.0.1:5000
-
-云端部署请看：
-云端部署说明.txt

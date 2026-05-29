@@ -1,7 +1,6 @@
 services:
   - type: web
-    name: uber-ai-driver-assistant
-    runtime: docker
-    plan: starter
-    dockerfilePath: ./Dockerfile
-    autoDeploy: true
+    name: uber-ai-cloud-v12-maps-ocr
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py

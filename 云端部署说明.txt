@@ -1,49 +1,14 @@
-Uber AI Cloud V8.0 云端测试版
+Render部署说明
 
-这个版本是给别人外网测试用的。
-别人不需要连接你家 Wi-Fi，只要你部署到云端，他们打开网址就能用。
-
-推荐部署平台：Render.com
-
-一、你需要准备
-1. 一个 GitHub 账号
-2. 一个 Render 账号
-3. 把本文件夹上传到 GitHub
-4. 在 Render 里创建 Web Service
-
-二、Render 部署设置
 Build Command:
 pip install -r requirements.txt
 
 Start Command:
-gunicorn app:app
-
-Environment:
-Python
-
-三、部署成功后
-Render 会给你一个网址，例如：
-https://uber-ai-driver-assistant.onrender.com
-
-你把这个网址发给别人，别人手机就能测试。
-
-四、GPS说明
-云端网址是 HTTPS，手机 GPS 会比现在家里 Wi-Fi 的 http://192.168.x.x 更稳定。
-如果用户还是拒绝位置权限，也可以手动输入城市或经纬度。
-
-五、注意
-1. 免费云服务器第一次打开可能比较慢
-2. OCR第一次运行也可能慢，因为要加载模型
-3. 这个是测试版，不建议直接商用收钱
-4. 后续正式收费版需要：
-   - 用户登录
-   - 云数据库
-   - Stripe订阅
-   - 隐私政策
-   - 用户数据授权
-   - 管理后台
-
-本地测试：
 python app.py
-打开：
-http://127.0.0.1:5000
+
+Google Maps:
+如需启用Google Maps，在Render环境变量中添加：
+GOOGLE_MAPS_API_KEY=你的Google Maps API Key
+
+注意：
+V12 OCR使用浏览器端Tesseract.js，需要浏览器能访问CDN。
